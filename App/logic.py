@@ -6,8 +6,8 @@ from DataStructures.List import array_list as lt
 from DataStructures.List import single_linked_list as sll
 
 import time
-from DataStructures import map_separate_chaining as msc
-from DataStructures import array_list as al
+from DataStructures.Map import map_separate_chaining as msc
+from DataStructures.List import array_list as al
 
 def new_logic():
     """
