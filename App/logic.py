@@ -4,10 +4,11 @@ import os
 
 from DataStructures.List import array_list as lt
 from DataStructures.List import single_linked_list as sll
-
-import time
 from DataStructures.Map import map_separate_chaining as msc
 from DataStructures.List import array_list as al
+
+csv.field_size_limit(2147483647)
+default_limit = 1000
 
 def new_logic():
     """
