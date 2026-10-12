@@ -19,11 +19,11 @@ def cmp_comparacion_amount(dato1, dato2):
 def new_logic():
     """
     Crea el catalogo para almacenar las estructuras de datos
-    """
-    #TODO: Llama a las funciónes de creación de las estructuras de datos
+    """ 
     catalog = {
         'ordenes': lt.new_list(),
         'canales': msc.new_map(10, 0.5),
+        'pedidos_por_pais': msc.new_map(10, 0.5),
         'fecha_min': None,
         'fecha_max': None
     }
@@ -92,6 +92,13 @@ def load_data(catalog, filename):
                 else:
                     msc.put(catalog["canales"], canal, cuenta + 1)
                     
+                pais = pedido["Country"]
+                lista_pais = msc.get(catalog["pedidos_por_pais"], pais)
+                if lista_pais is None:
+                    lista_pais = lt.new_list()
+                    msc.put(catalog["pedidos_por_pais"], pais, lista_pais)
+                lt.add_last(lista_pais, pedido)
+                    
                 fecha = pedido["Order_Date"]
                 if catalog["fecha_min"] is None or fecha < catalog["fecha_min"]:
                     catalog["fecha_min"] = fecha
@@ -137,14 +144,78 @@ def req_1(catalog):
     # TODO: Modificar el requerimiento 1
     pass
 
+def comparacion_req2 (e1, e2):
+    if e1["Boxes_Shipped"] != e2["Boxes _Shipped"]:
+        return e1["Boxes_Shipped"] < e2["Boxes_Shipped"]
+    if e1["Order_Date"] != e2["Order_Date"]:
+        return e1["Order_Date"] > e2["Order_Date"]
+    return e1["Order_ID"] < e2["Order_ID"]
 
-def req_2(catalog):
+def req_2(catalog, pais, min_cajas, max_cajas):
     """
     Retorna el resultado del requerimiento 2
     """
-    # TODO: Modificar el requerimiento 2
-    pass
-
+    tiempoinicial = get_time()
+    
+    lista_pais = msc.get(catalog["pedidos_por_pais"], pais)
+    filtrados = lt.new_list()
+    conteo_productos = msc.new_map(10, 0.5)
+    suma_marketing = 0
+    suma_amount = 0
+    
+    if lista_pais is not None:
+        for i in range(lt.size(lista_pais)):
+            producto = lt.get(lista_pais, i)
+            cajas = producto["Boxes_Shipped"]
+            if cajas is not None and (min_cajas <= cajas and cajas <= max_cajas):
+                lt.add_last(filtrados, producto)
+                suma_marketing += producto["Marketing_Spend"]
+                suma_amount += producto["Amount"]
+                c = msc.get(conteo_productos, producto["Product"])
+                msc.put(conteo_productos, producto["Product"], 1 if c is None else c + 1)
+                
+    totalfiltrados = lt.size(filtrados)
+    resultado = {
+        "total": totalfiltrados,
+        "n_productos": 0,
+        "promedio_marketing": 0,
+        "promedio_amount": 0,
+        "producto_top": None,
+        "pedidos_top": 0,
+        "lista": lt.new_list()
+    }
+    if totalfiltrados > 0:
+        claves = msc.key_set(conteo_productos)
+        resultado["n_productos"] = lt.size(claves)
+        
+        mejor = None
+        mejor_cuenta = 0
+        for i in range(lt.size(claves)):
+            producto2 = lt.get_element(claves, i)
+            cuenta = msc.get(conteo_productos, producto2)
+            if cuenta > mejor_cuenta or (cuenta == mejor_cuenta and producto2 < mejor):
+                mejor = producto2
+                mejor_cuenta = cuenta
+        
+        resultado["producto_top"] = mejor
+        resultado["pedidos_top"] = mejor_cuenta
+        resultado["promedio_marketing"] = suma_marketing / totalfiltrados
+        resultado["promedio_amount"] = suma_amount / totalfiltrados
+        
+        ordenados = lt.merge_sort(filtrados, comparacion_req2)
+        if totalfiltrados > 20:
+            salida = lt.new_list()
+            for i in range(10):
+                lt.add_last(salida, lt.get_element(ordenados, i))
+            for i in range(totalfiltrados - 10, totalfiltrados):
+                lt.add_last(salida, lt.get_element(ordenados, i))
+            resultado["lista"] = salida
+        else:
+            resultado["lista"] = ordenados
+            
+    tiempofinal = get_time()
+    resultado["tiempo"] = delta_time(tiempoinicial, tiempofinal)
+    return resultado
 
 def req_3(catalog, fecha, min_amount, max_amount):
     """
@@ -200,6 +271,8 @@ def req_3(catalog, fecha, min_amount, max_amount):
         print(p["Order_ID"], p["Product"], p["Country"], p["Order_Date"],
               "Marketing:", p["Marketing_Spend"], "Boxes:", p["Boxes_Shipped"],
               "Amount:", p["Amount"], "Aporte:", aporte)
+        
+        
 def req_4(catalog):
     """
     Retorna el resultado del requerimiento 4
@@ -207,13 +280,74 @@ def req_4(catalog):
     # TODO: Modificar el requerimiento 4
     pass
 
+def comparacion_req5 (e1, e2):
+    if e1["recaudo"] != e2["recaudo"]:
+        return e1["recaudo"] > e2["recaudo"]
+    if e1["cajas"] != e2["cajas"]:
+        return e1["cajas"] > e2["cajas"]
+    return e1["producto"] < e2["producto"]
 
-def req_5(catalog):
+def req_5(catalog, n, pais, fecha_inicio, fecha_fin):
     """
     Retorna el resultado del requerimiento 5
     """
-    # TODO: Modificar el requerimiento 5
-    pass
+    tiempoinicio = get_time()
+    
+    lista_pais = msc.get(catalog["pedidos_por_pais"], pais)
+    acumulados = msc.new_map(10, 0.5)
+    total_pedidos = 0
+    recaudo_total = 0
+    
+    if lista_pais is not None and fecha_inicio <= fecha_fin:
+        for i in range(lt.size(lista_pais)):
+            producto = lt.get_element(lista_pais, i)
+            if fecha_inicio <= producto["Order_Date"] and producto["Order_Date"] <= fecha_fin:
+                total_pedidos += 1
+                recaudo_total += producto["Amount"]
+                acum = msc.get(acumulados, producto["Product"])
+                if acum is None:
+                    acum = {
+                        "producto": producto["Product"], 
+                        "pedidos": 0,
+                        "cajas": 0,
+                        "recaudo": 0,
+                        "suma_precio": 0,
+                        "suma_descuento": 0,
+                        "marketing": 0
+                    }
+                    msc.put(acumulados, producto["Product"], acum)
+                acum["pedidos"] += 1
+                acum["cajas"] += producto["Boxes_Shipped"]
+                acum["recaudo"] += producto["Amount"]
+                acum["suma_precio"] += producto["Price_Per_Box"]
+                acum["suma_descuento"] += producto["Discount_Pct"]
+                acum["marketing"] += producto["Marketing_Spend"]
+                
+    claves = msc.key_set(acumulados)
+    n_productos = lt.size(claves)
+    
+    lista_acum = lt.new_list()
+    for i in range(n_productos):
+        acum = msc.get(acumulados, lt.get_element(claves, i))
+        acum["promedio_precio"] = acum["suma_precio"] / acum["pedidos"]
+        acum["promedio_descuento"] = acum["suma_descuento"] / acum["pedidos"]
+        lt.add_last(lista_acum, acum)
+        
+    ordenados = lt.merge_sort(lista_acum, comparacion_req5)
+    top = lt.new_list()
+    for i in range(min(n, n_productos)):
+        lt.add_last(top, lt.get_element(ordenados, i))
+        
+    tiempofinal = get_time()
+    return {
+        "tiempo": delta_time(tiempoinicio, tiempofinal),
+        "total_pedidos": total_pedidos,
+        "n_productos": n_productos,
+        "recaudo_total": recaudo_total,
+        "top": top
+    }
+    
+    
 
 def req_6(catalog):
     """
