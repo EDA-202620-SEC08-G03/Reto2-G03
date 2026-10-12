@@ -10,13 +10,22 @@ from DataStructures.List import array_list as al
 csv.field_size_limit(2147483647)
 default_limit = 1000
 
+def cmp_comparacion_amount(dato1, dato2):
+    if dato1["Amount"] != dato2["Amount"]:
+        return dato1["Amount"] > dato2["Amount"]
+    return dato1["Order_ID"] > dato2["OrderID"]
+
+
 def new_logic():
     """
     Crea el catalogo para almacenar las estructuras de datos
     """
     #TODO: Llama a las funciónes de creación de las estructuras de datos
     catalog = {
-        'ordenes': lt.new_list()
+        'ordenes': lt.new_list(),
+        'canales': msc.new_map(10, 0.5),
+        'fecha_min': None,
+        'fecha_max': None
     }
     
     return catalog
@@ -63,52 +72,62 @@ def load_data(catalog, filename):
     """
     # TODO: Realizar la carga de datos
     ruta = os.path.join("Data", filename)
+    
+    catalog["ordenes"] = lt.new_list()
+    catalog["canales"] = msc.new_map(10, 0.5)
+    catalog["fecha_min"] = None
+    catalog["fecha_max"] = None
 
     with open(ruta, encoding="utf-8-sig") as archivo:
         lector = csv.DictReader(archivo)
         for fila in lector:
             pedido = convertir_fila(fila)
-            lt.add_last(catalog["ordenes"], pedido)
+            if pedido["Amount"] is not None:
+                lt.add_last(catalog["ordenes"], pedido)
+                
+                canal = pedido["Channel"]
+                cuenta = msc.get(catalog["canales"], canal)
+                if cuenta is None:
+                    msc.put(catalog["canales"], canal, 1)   
+                else:
+                    msc.put(catalog["canales"], canal, cuenta + 1)
+                    
+                fecha = pedido["Order_Date"]
+                if catalog["fecha_min"] is None or fecha < catalog["fecha_min"]:
+                    catalog["fecha_min"] = fecha
+                if catalog["fecha_max"] is None or fecha > catalog["fecha_max"]:
+                    catalog["fecha_max"] = fecha
+
 
     return catalog
 
 # Funciones de consulta sobre el catálogo
 
-def resumen_carga(catalog): # Tomado del reto anterior, que fue creado utilizando IAG
+def resumen_carga(catalog): # Tomado y modificado con respecto al reto anterior, donde fue creado utilizando IAG
     """
     Calcula las estadísticas que pide la Parte 2 sobre los datos ya cargados
     """
     pedidos = catalog["ordenes"]
     total = lt.size(pedidos)
 
-    menor = lt.get_element(pedidos, 0)
-    mayor = lt.get_element(pedidos, 0)
+    ordenados = lt.merge_sort(pedidos, cmp_comparacion_amount)
+    n = min(5, total)
 
-    for i in range(total):
-        actual = lt.get_element(pedidos, i)
-
-        if actual["Amount"] > mayor["Amount"] or (actual["Amount"] == mayor["Amount"] and actual["Price_per_Box"] < mayor["Price_per_Box"]):
-            mayor = actual
-
-        if actual["Amount"] < menor["Amount"] or (actual["Amount"] == menor["Amount"] and actual["Price_per_Box"] < menor["Price_per_Box"]):
-            menor = actual
-
-    primeros_5 = []
-    cantidad_primeros = min(5, total)
-    for i in range(cantidad_primeros):
-        primeros_5.append(lt.get_element(pedidos, i))
-
-    ultimos_5 = []
-    inicio_ultimos = max(0, total - 5)
-    for i in range(inicio_ultimos, total):
-        ultimos_5.append(lt.get_element(pedidos, i))
+    canales = []
+    claves = msc.key_set(catalog["canales"])
+    for i in range(lt.size(claves)):
+        clave = lt.get_element(claves, i)
+        canales.append([clave, msc.get(catalog["canales"], clave)])
 
     return {
         "total": total,
-        "menor": menor,
-        "mayor": mayor,
-        "primeros_5": primeros_5,
-        "ultimos_5": ultimos_5,
+        "canales": canales,
+        "fecha_min": catalog["fecha_min"],
+        "fecha_max": catalog["fecha_max"],
+        "mayor": lt.first_element(ordenados),
+        "menor": lt.last_element(ordenados),
+        "primeros_5": lt.sub_list(ordenados, 0, n)["elements"],
+        "ultimos_5": lt.sub_list(ordenados, total - n, n)["elements"],
     }
 
 def req_1(catalog):

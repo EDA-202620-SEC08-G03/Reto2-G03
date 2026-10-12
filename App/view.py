@@ -76,8 +76,8 @@ def print_resumen_datos(tiempo, resumen):
         print_pedido(p)
 
 def print_pedido(p): 
-    print(" {0} | {1} | {2} | {3} | {4} | ${5:.2f} | ${6:.2f}".format(p["Order_ID"], p["Product"], p["Country"], p["Channel"],p["Order_Date"], p["Price_per_Box"], p["Amount"]))
-    #Tomado del reto anterior, que fue realizado utlizando IAG
+    print(" {0} | {1} | {2} | {3} | {4} | {5} |${6:.2f} | ${7:.2f}".format(p["Order_ID"], p["Product"], p["Country"], p["Channel"],p["Order_Date"], p["Boxes_Shipped"], p["Price_per_Box"], p["Amount"]))
+    #Tomado del reto anterior, que fue realizado utlizando IAG, solo se añade "Boxes Shipped" 
 
 
 def print_data(control, id):
