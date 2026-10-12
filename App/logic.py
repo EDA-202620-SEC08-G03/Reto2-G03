@@ -247,9 +247,9 @@ def req_3(catalog, fecha, min_amount, max_amount):
     
     total_amount=0
     total_marketing=0
-    for p in filtrados["elements"]:
-        total_amount+=p["Amount"]
-        total_marketing+=p["Marketing_Spend"]
+    for pedidos in filtrados["elements"]:
+        total_amount+=pedidos["Amount"]
+        total_marketing+=pedidos["Marketing_Spend"]
     
     total_aporte=total_amount-total_marketing
     sorted_list = al.merge_sort(filtrados, cmp_req3)
