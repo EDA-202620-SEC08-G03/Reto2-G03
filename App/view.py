@@ -109,15 +109,17 @@ def print_req_2(control):
     """
         Función que imprime la solución del Requerimiento 2 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 2
-    pass
-
+    
+    pais = input("Ingrese un país: ").strip()
+    min_cajas = int(input("Número mínimo de cajas enviadas: "))
+    max_cajas = int(input("Número máximo de cajas enviadas: "))
+    print(logic.req_2(control, pais, min_cajas, max_cajas))
 
 def print_req_3(control):
     """
         Función que imprime la solución del Requerimiento 3 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 3
+    
     fecha = input("Ingrese la fecha (YYYY-MM-DD): ")
     min_amount = int(input("Ingrese el Amount mínimo: "))
     max_amount = int(input("Ingrese el Amount máximo: "))
@@ -136,15 +138,18 @@ def print_req_5(control):
     """
         Función que imprime la solución del Requerimiento 5 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 5
-    pass
+    
+    n = int(input("Número de productos a consultar: "))
+    pais = input("Ingrese un país: ")
+    fecha_inicio = input("Ingrese la fecha del periodo: ")
+    fecha_final = input("Ingrese la fecha final del periodo: ")
+    print(logic.req_5(control, n, pais, fecha_inicio, fecha_final))
 
 
 def print_req_6(control):
     """
         Función que imprime la solución del Requerimiento 6 en consola
     """
-    # TODO: Imprimir el resultado del requerimiento 6
     producto = input("Ingrese el producto: ")
     fecha_inicial = input("Ingrese la fecha inicial (YYYY-MM-DD): ")
     fecha_final = input("Ingrese la fecha final (YYYY-MM-DD): ")

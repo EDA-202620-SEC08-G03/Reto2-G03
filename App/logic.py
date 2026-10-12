@@ -146,7 +146,7 @@ def req_1(catalog):
     pass
 
 def comparacion_req2 (e1, e2):
-    if e1["Boxes_Shipped"] != e2["Boxes _Shipped"]:
+    if e1["Boxes_Shipped"] != e2["Boxes_Shipped"]:
         return e1["Boxes_Shipped"] < e2["Boxes_Shipped"]
     if e1["Order_Date"] != e2["Order_Date"]:
         return e1["Order_Date"] > e2["Order_Date"]
@@ -166,14 +166,17 @@ def req_2(catalog, pais, min_cajas, max_cajas):
     
     if lista_pais is not None:
         for i in range(lt.size(lista_pais)):
-            producto = lt.get(lista_pais, i)
+            producto = lt.get_element(lista_pais, i)
             cajas = producto["Boxes_Shipped"]
             if cajas is not None and (min_cajas <= cajas and cajas <= max_cajas):
                 lt.add_last(filtrados, producto)
                 suma_marketing += producto["Marketing_Spend"]
                 suma_amount += producto["Amount"]
                 c = msc.get(conteo_productos, producto["Product"])
-                msc.put(conteo_productos, producto["Product"], 1 if c is None else c + 1)
+                if c is None:
+                    msc.put(conteo_productos, producto["Product"], 1)
+                else:
+                    msc.put(conteo_productos, producto["Product"], c + 1)
                 
     totalfiltrados = lt.size(filtrados)
     resultado = {
@@ -217,6 +220,7 @@ def req_2(catalog, pais, min_cajas, max_cajas):
     tiempofinal = get_time()
     resultado["tiempo"] = delta_time(tiempoinicial, tiempofinal)
     return resultado
+
 def cmp_req3(p1, p2):
         if p1["Amount"] > p2["Amount"]:
             return True
@@ -232,7 +236,6 @@ def req_3(catalog, fecha, min_amount, max_amount):
     """
     Retorna el resultado del requerimiento 3
     """
-    # TODO: Modificar el requerimiento 3
     inicio=get_time()
     filtrados = al.new_list()
     for i in range(lt.size(catalog["ordenes"])):
@@ -322,7 +325,7 @@ def req_5(catalog, n, pais, fecha_inicio, fecha_fin):
                 acum["pedidos"] += 1
                 acum["cajas"] += producto["Boxes_Shipped"]
                 acum["recaudo"] += producto["Amount"]
-                acum["suma_precio"] += producto["Price_Per_Box"]
+                acum["suma_precio"] += producto["Price_per_Box"]
                 acum["suma_descuento"] += producto["Discount_Pct"]
                 acum["marketing"] += producto["Marketing_Spend"]
                 
@@ -364,7 +367,6 @@ def req_6(catalog, producto, fecha_inicial, fecha_final, n):
     """
     Retorna el resultado del requerimiento 6
     """
-    # TODO: Modificar el requerimiento 6
 
     inicio = get_time()
     
