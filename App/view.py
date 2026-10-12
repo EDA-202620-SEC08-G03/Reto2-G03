@@ -118,7 +118,10 @@ def print_req_3(control):
         Función que imprime la solución del Requerimiento 3 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 3
-    pass
+    fecha = input("Ingrese la fecha (YYYY-MM-DD): ")
+    min_amount = int(input("Ingrese el Amount mínimo: "))
+    max_amount = int(input("Ingrese el Amount máximo: "))
+    print(logic.req_3(control, fecha, min_amount, max_amount))
 
 
 def print_req_4(control):
@@ -142,7 +145,11 @@ def print_req_6(control):
         Función que imprime la solución del Requerimiento 6 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 6
-    pass
+    producto = input("Ingrese el producto: ")
+    fecha_inicial = input("Ingrese la fecha inicial (YYYY-MM-DD): ")
+    fecha_final = input("Ingrese la fecha final (YYYY-MM-DD): ")
+    n = int(input("Ingrese N (cantidad de países): "))
+    print(logic.req_6(control, producto, fecha_inicial, fecha_final, n))
 
 # Se crea la lógica asociado a la vista
 control = new_logic()

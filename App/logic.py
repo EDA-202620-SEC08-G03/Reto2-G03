@@ -13,7 +13,7 @@ default_limit = 1000
 def cmp_comparacion_amount(dato1, dato2):
     if dato1["Amount"] != dato2["Amount"]:
         return dato1["Amount"] > dato2["Amount"]
-    return dato1["Order_ID"] > dato2["OrderID"]
+    return dato1["Order_ID"] > dato2["Order_ID"]
 
 
 def new_logic():
@@ -88,9 +88,10 @@ def load_data(catalog, filename):
                 canal = pedido["Channel"]
                 cuenta = msc.get(catalog["canales"], canal)
                 if cuenta is None:
-                    msc.put(catalog["canales"], canal, 1)   
+                    msc.put(catalog["canales"], canal, 1)
                 else:
                     msc.put(catalog["canales"], canal, cuenta + 1)
+
                     
                 pais = pedido["Country"]
                 lista_pais = msc.get(catalog["pedidos_por_pais"], pais)
@@ -216,29 +217,7 @@ def req_2(catalog, pais, min_cajas, max_cajas):
     tiempofinal = get_time()
     resultado["tiempo"] = delta_time(tiempoinicial, tiempofinal)
     return resultado
-
-def req_3(catalog, fecha, min_amount, max_amount):
-    """
-    Retorna el resultado del requerimiento 3
-    """
-    # TODO: Modificar el requerimiento 3
-    inicio=get_time()
-    pedidos_fecha = msc.get(catalog["pedidos_por_fecha"], fecha)
-    if pedidos_fecha is None:
-        print("No hay pedidos en esa fecha.")
-        return None
-    filtrados = al.new_list()
-    for pedido in pedidos_fecha["elements"]:
-        if min_amount <= pedido["Amount"] <= max_amount:
-            al.add_last(filtrados, pedido)
-    total_amount=0
-    total_marketing=0
-    for p in filtrados["elements"]:
-        total_amount+=p["Amount"]
-        total_marketing+=p["Marketing_Spend"]
-    
-    total_aporte=total_amount-total_marketing
-    def cmp_amount(p1, p2):
+def cmp_req3(p1, p2):
         if p1["Amount"] > p2["Amount"]:
             return True
         elif p1["Amount"] == p2["Amount"]:
@@ -249,7 +228,31 @@ def req_3(catalog, fecha, min_amount, max_amount):
             elif aporte1 == aporte2:
                 return p1["Order_ID"] < p2["Order_ID"]
         return False
-    sorted_list = al.merge_sort(filtrados, cmp_amount, "descendente")
+def req_3(catalog, fecha, min_amount, max_amount):
+    """
+    Retorna el resultado del requerimiento 3
+    """
+    # TODO: Modificar el requerimiento 3
+    inicio=get_time()
+    filtrados = al.new_list()
+    for i in range(lt.size(catalog["ordenes"])):
+        pedido = lt.get_element(catalog["ordenes"], i)
+        if pedido["Order_Date"] == fecha and min_amount <= pedido["Amount"] <= max_amount:
+           al.add_last(filtrados, pedido)
+    
+     
+    if filtrados is None:
+        print("No hay pedidos en esa fecha.")
+        return None
+    
+    total_amount=0
+    total_marketing=0
+    for p in filtrados["elements"]:
+        total_amount+=p["Amount"]
+        total_marketing+=p["Marketing_Spend"]
+    
+    total_aporte=total_amount-total_marketing
+    sorted_list = al.merge_sort(filtrados, cmp_req3)
 
     if al.size(sorted_list) > 20:
         resultado = al.sub_list(sorted_list, 1, 10)
@@ -266,11 +269,11 @@ def req_3(catalog, fecha, min_amount, max_amount):
     print(f"Total Marketing Spend: {total_marketing}")
     print(f"Total Aporte Comercial: {total_aporte}\n")
 
-    for p in resultado["elements"]:
-        aporte = p["Amount"] - p["Marketing_Spend"]
-        print(p["Order_ID"], p["Product"], p["Country"], p["Order_Date"],
-              "Marketing:", p["Marketing_Spend"], "Boxes:", p["Boxes_Shipped"],
-              "Amount:", p["Amount"], "Aporte:", aporte)
+    for pedidos in resultado["elements"]:
+        aporte = pedidos["Amount"] - pedidos["Marketing_Spend"]
+        print(pedidos["Order_ID"], pedidos["Product"], pedidos["Country"], pedidos["Order_Date"],
+              "Marketing:", pedidos["Marketing_Spend"], "Boxes:", pedidos["Boxes_Shipped"],
+              "Amount:", pedidos["Amount"], "Aporte:", aporte)
         
         
 def req_4(catalog):
@@ -347,14 +350,90 @@ def req_5(catalog, n, pais, fecha_inicio, fecha_fin):
         "top": top
     }
     
-    
+def cmp_req_6(p1, p2):
+        if p1["Eficiencia"] > p2["Eficiencia"]:
+            return True
+        elif p1["Eficiencia"] == p2["Eficiencia"]:
+            if p1["Amount_total"] > p2["Amount_total"]:
+                return True
+            elif p1["Amount_total"] == p2["Amount_total"]:
+                return p1["Country"] < p2["Country"]
+        return False
 
-def req_6(catalog):
+def req_6(catalog, producto, fecha_inicial, fecha_final, n):
     """
     Retorna el resultado del requerimiento 6
     """
     # TODO: Modificar el requerimiento 6
-    pass
+
+    inicio = get_time()
+    
+    filtrados = al.new_list()
+    for i in range(al.size(catalog["ordenes"])):
+        pedido = al.get_element(catalog["ordenes"], i)
+        if pedido["Product"] == producto and fecha_inicial <= pedido["Order_Date"] <= fecha_final:
+            al.add_last(filtrados, pedido)
+        
+
+
+    paises_map = msc.new_map(100,4)
+    for pedido in filtrados["elements"]:
+        pais = pedido["Country"]
+        pais_info = msc.get(paises_map, pais)
+        if pais_info is None:
+            pais_info = {
+                "Country": pais,
+                "Pedidos": 0,
+                "Amount_total": 0,
+                "Marketing_total": 0,
+                "Boxes_total": 0
+            }
+            msc.put(paises_map, pais, pais_info)
+        pais_info["Pedidos"] += 1
+        pais_info["Amount_total"] += pedido["Amount"]
+        pais_info["Marketing_total"] += pedido["Marketing_Spend"]
+        pais_info["Boxes_total"] += pedido["Boxes_Shipped"]
+
+    paises_lista = al.new_list()
+    for bucket in paises_map["table"]:
+        nodo = bucket["first"]
+        while nodo is not None:
+            entry = nodo["info"]
+            info = entry["value"]
+            if info["Marketing_total"] > 0:
+                info["Eficiencia"] = info["Amount_total"] / info["Marketing_total"]
+                al.add_last(paises_lista, info)
+            nodo = nodo["next"]
+
+    
+
+    paises_ordenados = al.merge_sort(paises_lista, cmp_req_6)
+    n_total = al.size(paises_ordenados)
+    if n > n_total:
+        n = n_total
+    top_n = al.sub_list(paises_ordenados,0, n)
+
+    total_amount = sum(p["Amount_total"] for p in paises_lista["elements"])
+    total_marketing = sum(p["Marketing_total"] for p in paises_lista["elements"])
+
+    fin = get_time()
+    tiempo = delta_time(inicio,fin)
+
+    print(f"Tiempo de ejecución: {tiempo} ms")
+    print(f"Número total de pedidos filtrados: {al.size(filtrados)}")
+    print(f"Número total de países encontrados: {n_total}")
+    print(f"Amount total: {total_amount}")
+    print(f"Marketing total: {total_marketing}\n")
+
+    print(f"Top {n} países con mayor eficiencia de mercadeo:")
+    for p in top_n["elements"]:
+        print(p["Country"], 
+              "Pedidos:", p["Pedidos"], 
+              "Amount:", p["Amount_total"], 
+              "Marketing:", p["Marketing_total"], 
+              "Boxes:", p["Boxes_total"], 
+              "Eficiencia:", round(p["Eficiencia"], 2))
+
 
 
 # Funciones para medir tiempos de ejecucion
