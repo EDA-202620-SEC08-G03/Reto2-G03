@@ -14,7 +14,7 @@ default_limit = 1000
 def cmp_comparacion_amount(dato1, dato2):
     if dato1["Amount"] != dato2["Amount"]:
         return dato1["Amount"] > dato2["Amount"]
-    return dato1["Order_ID"] > dato2["Order_ID"]
+    return dato1["Order_ID"] < dato2["Order_ID"]
 
 
 def new_logic():
@@ -29,8 +29,8 @@ def new_logic():
         "productos":msc.new_map(10,0.5),
         'fecha_min': None,
         'fecha_max': None,
-        'pedidos_por_mes': msc.new_map(10, 0.5),
-        'pedidos_por_producto_pais': msc.new_map(10, 0.5)
+        'pedidos_por_mes': mlp.new_map(10, 0.5),
+        'pedidos_por_producto_pais': mlp.new_map(10, 0.5)
     }
     
     return catalog
@@ -115,6 +115,20 @@ def load_data(catalog, filename):
                     msc.put(catalog["productos"],producto,lista_pedidos)
                 
                 lt.add_last(lista_pedidos,pedido)
+                
+                mes = fecha[:7]
+                lista_mes = mlp.get(catalog["pedidos_por_mes"], mes)
+                if lista_mes is None:
+                    lista_mes = lt.new_list()
+                    mlp.put(catalog["pedidos_por_mes"], mes, lista_mes)
+                lt.add_last(lista_mes, pedido)
+
+                clave_pp = producto + "|" + pais
+                lista_pp = mlp.get(catalog["pedidos_por_producto_pais"], clave_pp)
+                if lista_pp is None:
+                    lista_pp = lt.new_list()
+                    mlp.put(catalog["pedidos_por_producto_pais"], clave_pp, lista_pp)
+                lt.add_last(lista_pp, pedido)
                 
                 if catalog["fecha_min"] is None or fecha < catalog["fecha_min"]:
                     catalog["fecha_min"] = fecha
