@@ -24,9 +24,13 @@ def new_logic():
     catalog = {
         'ordenes': lt.new_list(),
         'canales': msc.new_map(10, 0.5),
+        "pedidos_por_fecha": msc.new_map(10, 0.5),
         'pedidos_por_pais': msc.new_map(10, 0.5),
+        "productos":msc.new_map(10,0.5),
         'fecha_min': None,
-        'fecha_max': None
+        'fecha_max': None,
+        'pedidos_por_mes': msc.new_map(10, 0.5),
+        'pedidos_por_producto_pais': msc.new_map(10, 0.5)
     }
     
     return catalog
@@ -74,13 +78,6 @@ def load_data(catalog, filename):
     # TODO: Realizar la carga de datos
     ruta = os.path.join("Data", filename)
     
-    catalog["ordenes"] = lt.new_list()
-    catalog["canales"] = msc.new_map(10, 0.5)
-    catalog["pedidos_por_fecha"] = msc.new_map(10, 0.5)
-    catalog["productos"]=msc.new_map(10,0.5)
-    catalog["fecha_min"] = None
-    catalog["fecha_max"] = None
-
     with open(ruta, encoding="utf-8-sig") as archivo:
         lector = csv.DictReader(archivo)
         for fila in lector:
@@ -109,6 +106,8 @@ def load_data(catalog, filename):
                     lista_fecha = lt.new_list()
                     msc.put(catalog["pedidos_por_fecha"], fecha, lista_fecha)
                 lt.add_last(lista_fecha, pedido)
+                
+                
                 producto=pedido["Product"]
                 lista_pedidos = msc.get(catalog["productos"],producto)
                 if lista_pedidos is None:
