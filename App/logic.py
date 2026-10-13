@@ -75,6 +75,8 @@ def load_data(catalog, filename):
     
     catalog["ordenes"] = lt.new_list()
     catalog["canales"] = msc.new_map(10, 0.5)
+    catalog["pedidos_por_fecha"] = msc.new_map(10, 0.5)
+    catalog["productos"]=msc.new_map(10,0.5)
     catalog["fecha_min"] = None
     catalog["fecha_max"] = None
 
@@ -99,8 +101,21 @@ def load_data(catalog, filename):
                     lista_pais = lt.new_list()
                     msc.put(catalog["pedidos_por_pais"], pais, lista_pais)
                 lt.add_last(lista_pais, pedido)
-                    
+                
                 fecha = pedido["Order_Date"]
+                lista_fecha = msc.get(catalog["pedidos_por_fecha"], fecha)
+                if lista_fecha is None:
+                    lista_fecha = lt.new_list()
+                    msc.put(catalog["pedidos_por_fecha"], fecha, lista_fecha)
+                lt.add_last(lista_fecha, pedido)
+                producto=pedido["Product"]
+                lista_pedidos = msc.get(catalog["productos"],producto)
+                if lista_pedidos is None:
+                    lista_pedidos = lt.new_list()
+                    msc.put(catalog["productos"],producto,lista_pedidos)
+                
+                lt.add_last(lista_pedidos,pedido)
+                
                 if catalog["fecha_min"] is None or fecha < catalog["fecha_min"]:
                     catalog["fecha_min"] = fecha
                 if catalog["fecha_max"] is None or fecha > catalog["fecha_max"]:
@@ -238,12 +253,17 @@ def req_3(catalog, fecha, min_amount, max_amount):
     """
     inicio=get_time()
     filtrados = al.new_list()
-    for i in range(lt.size(catalog["ordenes"])):
-        pedido = lt.get_element(catalog["ordenes"], i)
-        if pedido["Order_Date"] == fecha and min_amount <= pedido["Amount"] <= max_amount:
-           al.add_last(filtrados, pedido)
+    lista_pais = msc.get(catalog["pedidos_por_fecha"], fecha)
     
-     
+    
+    i=0
+    pedido = lt.get_element(lista_pais, i)
+    while pedido is not None and i < lt.size(lista_pais):
+        pedido = lt.get_element(lista_pais, i)
+        if min_amount <= pedido["Amount"] <= max_amount:
+            al.add_last(filtrados, pedido)
+        
+        i += 1
     if filtrados is None:
         print("No hay pedidos en esa fecha.")
         return None
@@ -376,7 +396,14 @@ def req_6(catalog, producto, fecha_inicial, fecha_final, n):
         if pedido["Product"] == producto and fecha_inicial <= pedido["Order_Date"] <= fecha_final:
             al.add_last(filtrados, pedido)
         
-
+    lista_paises=msc.get(catalog["productos"],producto)
+    pedido=al.get_element(lista_paises,0)
+    i=0
+    while i < al.size(lista_paises):
+        pedido = al.get_element(lista_paises, i)
+        if pedido["Product"] == producto and fecha_inicial <= pedido["Order_Date"] <= fecha_final:
+            al.add_last(filtrados, pedido)
+        i+=1
 
     paises_map = msc.new_map(100,4)
     for pedido in filtrados["elements"]:
