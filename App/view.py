@@ -135,7 +135,9 @@ def print_req_4(control):
         Función que imprime la solución del Requerimiento 4 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 4
-    pass
+    producto = input("Ingrese el producto: ")
+    pais = input("Ingrese el país: ")
+    print(logic.req_4(control, producto, pais))
 
 
 def print_req_5(control):

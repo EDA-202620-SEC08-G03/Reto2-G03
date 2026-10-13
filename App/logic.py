@@ -169,44 +169,52 @@ def req_1(catalog, anio, mes, descuento_min, descuento_max):
     # TODO: Modificar el requerimiento 1
     
     tiempo_inicial = get_time()
-    pedidos = catalog["ordenes"]
-    filtrados = lt.new_list()
-    tamaño_lista = lt.size(pedidos)
+    mes_int = int(mes)
+    if mes_int < 10:
+        clave_mes = str(anio) + "-0" + str(mes_int)
+    else:
+        clave_mes = str(anio) + "-" + str(mes_int)
+    pedidos = mlp.get(catalog["pedidos_por_mes"], clave_mes)
     
-    for i in range(tamaño_lista):
-        pedido = lt.get_element(pedidos, i)
-        fecha = pedido["Order_Date"]
-        if anio == fecha[:4] and mes == fecha[5:7]:
+    filtrados = lt.new_list()
+    total_amount = 0
+    
+    if pedidos != None:
+        tamaño_lista = lt.size(pedidos)
+        for i in range(tamaño_lista):
+            pedido = lt.get_element(pedidos, i)
             descuento = pedido["Discount_Pct"]
-            if descuento is not None and descuento_min <= descuento <= descuento_max:
-                lt.add_last(filtrados, pedido)          
+            if descuento != None and descuento_min <= descuento <= descuento_max:
+                lt.add_last(filtrados, pedido)
+                total_amount += pedido["Amount"]
     
     resultado = {
-        "total" : len(filtrados),
-        "promedio_price" : 0,
-        "promedio_boxes" : 0
+        "total" : lt.size(filtrados),
+        "total_amount" : total_amount,
+        "promedio_price_per_box" : 0,
+        "promedio_boxes_shipped" : 0
     }
+    
+    total_price = 0
+    total_boxes = 0                    
     
     for i in range(lt.size(filtrados)):
         pedido = lt.get_element(filtrados, i)
-        if pedido["Price_per_Box"] is not None:
-            total_price += pedido["Price_per_Box"]     
-        else: 
-            total_price = pedido["Price_per_Box"]
-        if pedido["Boxes_Shipped"] is not None:
+        if pedido["Price_per_Box"] != None:
+            total_price += pedido["Price_per_Box"]
+        if pedido["Boxes_Shipped"] != None:
             total_boxes += pedido["Boxes_Shipped"]
-        else:
-            total_boxes = pedido["Boxes_Shipped"]
             
-    if len(filtrados) > 0:
-        resultado["promedio_price_per_box"] = total_price / len(filtrados) 
-        resultado["promedio_boxes_shipped"] = total_boxes / len(filtrados)
+    if lt.size(filtrados) > 0:
+        resultado["promedio_price_per_box"] = total_price / lt.size(filtrados) 
+        resultado["promedio_boxes_shipped"] = total_boxes / lt.size(filtrados)
         
     ordenados = lt.merge_sort(filtrados, cmp_req1)
-    if len(ordenados) > 20:
+    if lt.size(ordenados) > 20:
         resultado["primeros_10"] = lt.sub_list(ordenados, 0, 10)["elements"]
-        resultado["ultimos_10"] = lt.sub_list(ordenados, len(ordenados) - 10, 10)["elements"]
-        
+        resultado["ultimos_10"] = lt.sub_list(ordenados, lt.size(ordenados) - 10, 10)["elements"]
+    else:
+        resultado["lista"] = ordenados["elements"]
     
     tiempo_final = get_time()
     resultado["tiempo"] = delta_time(tiempo_inicial, tiempo_final)
@@ -365,25 +373,53 @@ def req_4(catalog, producto, pais):
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
+    
     tiempo_inicial = get_time()
     
-    filtrados = lt.new_list()
-    pedidos = catalog["ordenes"]
-    tamaño_lista = lt.size(pedidos)
+    clave = producto + "|" + pais
+    filtrados = mlp.get(catalog["pedidos_por_producto_pais"], clave)
     
-    for i in range(tamaño_lista):
-        pedido = lt.get_element(pedidos, i)
-        if pedido["Product"] == producto and pedido["Country"] == pais:
-            lt.add_last(filtrados, pedido)
-            
-    filtrados_ordenados = lt.merge_sort(filtrados, cmp_req4)
-        
+    total = 0
+    if filtrados != None:
+        total = lt.size(filtrados)
+    
     resultado = {
-        
+        "total" : total,
+        "promedio_price_per_box" : 0,
+        "promedio_discount_pct" : 0,
+        "promedio_marketing_spend" : 0,
+        "promedio_boxes_shipped" : 0
     }
+    
+    total_price = 0
+    total_discount = 0
+    total_marketing = 0
+    total_boxes = 0
+    
+    if total > 0:
+        for i in range(total):
+            pedido = lt.get_element(filtrados, i)
+            if pedido["Price_per_Box"] != None:
+                total_price += pedido["Price_per_Box"]
+            if pedido["Discount_Pct"] != None:
+                total_discount += pedido["Discount_Pct"]
+            if pedido["Marketing_Spend"] != None:
+                total_marketing += pedido["Marketing_Spend"]
+            if pedido["Boxes_Shipped"] != None:
+                total_boxes += pedido["Boxes_Shipped"]
+        
+        resultado["promedio_price_per_box"] = total_price / total
+        resultado["promedio_discount_pct"] = total_discount / total
+        resultado["promedio_marketing_spend"] = total_marketing / total
+        resultado["promedio_boxes_shipped"] = total_boxes / total
+        
+        ordenados = lt.merge_sort(filtrados, cmp_req4)
+        resultado["dos_primeros"] = lt.sub_list(ordenados, 0, min(2, total))["elements"]
     
     tiempo_final = get_time()
     resultado["tiempo"] = delta_time(tiempo_inicial, tiempo_final)
+    
+    return resultado
     
 
 def comparacion_req5 (e1, e2):
