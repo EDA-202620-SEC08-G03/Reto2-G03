@@ -26,7 +26,9 @@ def new_logic():
         'canales': msc.new_map(10, 0.5),
         'pedidos_por_pais': msc.new_map(10, 0.5),
         'fecha_min': None,
-        'fecha_max': None
+        'fecha_max': None,
+        'pedidos_por_mes': msc.new_map(10, 0.5),
+        'pedidos_por_producto_pais': msc.new_map(10, 0.5)
     }
     
     return catalog
