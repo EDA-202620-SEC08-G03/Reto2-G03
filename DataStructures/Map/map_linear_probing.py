@@ -126,3 +126,17 @@ def rehash(map):
 
     map["current_factor"] = map["size"] / map["capacity"]
     return map
+
+def key_set(my_map):
+    """
+    Obtiene la lista de llaves de la tabla de símbolos.
+
+    :param my_map: Tabla de símbolos (map_linear_probing)
+    :return: array_list con las llaves de la tabla
+    """
+    keys = al.new_list()
+    for i in range(al.size(my_map["table"])):
+        entry = al.get_element(my_map["table"], i)
+        if entry["key"] is not None and entry["key"] != "__EMPTY__":
+            al.add_last(keys, entry["key"])
+    return keys
