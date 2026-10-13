@@ -102,7 +102,11 @@ def print_req_1(control):
         Función que imprime la solución del Requerimiento 1 en consola
     """
     # TODO: Imprimir el resultado del requerimiento 1
-    pass
+    anio = input("Ingrese el año (YYYY): ").strip()
+    mes = input("Ingrese el mes (MM): ").strip()
+    descuento_min = float(input("Ingrese el descuento mínimo: "))
+    descuento_max = float(input("Ingrese el descuento máximo: "))
+    print(logic.req_1(control, anio, mes, descuento_min, descuento_max))
 
 
 def print_req_2(control):

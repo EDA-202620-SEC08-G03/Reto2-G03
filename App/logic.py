@@ -153,12 +153,67 @@ def resumen_carga(catalog): # Tomado y modificado con respecto al reto anterior,
         "ultimos_5": lt.sub_list(ordenados, total - n, n)["elements"],
     }
 
-def req_1(catalog):
+def cmp_req1(e1, e2):
+    if e1["Discount_Pct"] != e2["Discount_Pct"]:
+        return e1["Discount_Pct"] > e2["Discount_Pct"]
+    elif e1["Amount"] != e2["Amount"]:
+        return e1["Amount"] > e2["Amount"]
+    else:
+        return e1["Order_ID"] < e2["Order_ID"]
+
+def req_1(catalog, anio, mes, descuento_min, descuento_max):
     """
     Retorna el resultado del requerimiento 1
     """
     # TODO: Modificar el requerimiento 1
-    pass
+    
+    tiempo_inicial = get_time()
+    pedidos = catalog["ordenes"]
+    pais_lista = msc.get(catalog["pedidos_por_pais"], pais)
+    
+    filtrados = lt.new_list()
+    tamaño_lista = lt.size(pedidos)
+    
+    for i in range(tamaño_lista):
+        pedido = lt.get_element(pedidos, i)
+        fecha = pedido["Order_Date"]
+        if anio == fecha[:4] and mes == fecha[5:7]:
+            descuento = pedido["Discount_Pct"]
+            if descuento is not None and descuento_min <= descuento <= descuento_max:
+                lt.add_last(filtrados, pedido)          
+    
+    resultado = {
+        "total" : len(filtrados),
+        "promedio_price" : 0,
+        "promedio_boxes" : 0
+    }
+    
+    for i in range(lt.size(filtrados)):
+        pedido = lt.get_element(filtrados, i)
+        if pedido["Price_per_Box"] is not None:
+            total_price += pedido["Price_per_Box"]     
+        else: 
+            total_price = pedido["Price_per_Box"]
+        if pedido["Boxes_Shipped"] is not None:
+            total_boxes += pedido["Boxes_Shipped"]
+        else:
+            total_boxes = pedido["Boxes_Shipped"]
+            
+    if len(filtrados) > 0:
+        resultado["promedio_price_per_box"] = total_price / len(filtrados) 
+        resultado["promedio_boxes_shipped"] = total_boxes / len(filtrados)
+        
+    ordenados = lt.merge_sort(filtrados, cmp_req1)
+    if len(ordenados) > 20:
+        resultado["primeros_10"] = lt.sub_list(ordenados, 0, 10)["elements"]
+        resultado["ultimos_10"] = lt.sub_list(ordenados, len(ordenados) - 10, 10)["elements"]
+        
+    
+    tiempo_final = get_time()
+    resultado["tiempo"] = delta_time(tiempo_inicial, tiempo_final)
+    
+    return resultado
+    
 
 def comparacion_req2 (e1, e2):
     if e1["Boxes_Shipped"] != e2["Boxes_Shipped"]:
