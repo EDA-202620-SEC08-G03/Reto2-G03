@@ -5,6 +5,7 @@ import os
 from DataStructures.List import array_list as lt
 from DataStructures.List import single_linked_list as sll
 from DataStructures.Map import map_separate_chaining as msc
+from DataStructures.Map import map_linear_probing as mlp
 from DataStructures.List import array_list as al
 
 csv.field_size_limit(2147483647)
@@ -169,8 +170,6 @@ def req_1(catalog, anio, mes, descuento_min, descuento_max):
     
     tiempo_inicial = get_time()
     pedidos = catalog["ordenes"]
-    pais_lista = msc.get(catalog["pedidos_por_pais"], pais)
-    
     filtrados = lt.new_list()
     tamaño_lista = lt.size(pedidos)
     
@@ -353,13 +352,39 @@ def req_3(catalog, fecha, min_amount, max_amount):
               "Marketing:", pedidos["Marketing_Spend"], "Boxes:", pedidos["Boxes_Shipped"],
               "Amount:", pedidos["Amount"], "Aporte:", aporte)
         
-        
-def req_4(catalog):
+def cmp_req4(p1, p2):
+    if p1["Amount"] != p2["Amount"]:
+        return p1["Amount"] > p2["Amount"]
+    elif p1["Marketing_Spend"] != p2["Marketing_Spend"]:
+        return p1["Marketing_Spend"] < p2["Marketing_Spend"]
+    else: 
+        return p1["Order_ID"] < p2["Order_ID"]
+
+def req_4(catalog, producto, pais):
     """
     Retorna el resultado del requerimiento 4
     """
     # TODO: Modificar el requerimiento 4
-    pass
+    tiempo_inicial = get_time()
+    
+    filtrados = lt.new_list()
+    pedidos = catalog["ordenes"]
+    tamaño_lista = lt.size(pedidos)
+    
+    for i in range(tamaño_lista):
+        pedido = lt.get_element(pedidos, i)
+        if pedido["Product"] == producto and pedido["Country"] == pais:
+            lt.add_last(filtrados, pedido)
+            
+    filtrados_ordenados = lt.merge_sort(filtrados, cmp_req4)
+        
+    resultado = {
+        
+    }
+    
+    tiempo_final = get_time()
+    resultado["tiempo"] = delta_time(tiempo_inicial, tiempo_final)
+    
 
 def comparacion_req5 (e1, e2):
     if e1["recaudo"] != e2["recaudo"]:
