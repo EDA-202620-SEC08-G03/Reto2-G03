@@ -3,12 +3,14 @@ import App.logic as logic
 from DataStructures.List import array_list as lt
 
 archivos = {
-    "1": "chocolate_sale_100_elementos.csv",
+    "0": "chocolate_sale_100_elementos.csv",
+    "1": "chocolate_sale_10_ptc.csv",
     "2": "chocolate_sale_20_ptc.csv",
-    "3": "chocolate_sale_40_ptc.csv",
-    "4": "chocolate_sale_60_ptc.csv",
-    "5": "chocolate_sale_80_ptc.csv",
-    "6": "chocolate_sale_100_ptc.csv",
+    "3": "chocolate_sale_30_ptc.csv",
+    "4": "chocolate_sale_40_ptc.csv",
+    "5": "chocolate_sale_60_ptc.csv",
+    "6": "chocolate_sale_80_ptc.csv",
+    "7": "chocolate_sale_100_ptc.csv",
 }
 
 def new_logic():
@@ -34,12 +36,14 @@ def load_data(control):
     Carga los datos
     """
     print("\n¿Qué archivo desea cargar?\n")
-    print("1- 100 elementos (pruebas rápidas)")
+    print("0- 100 elementos (pruebas rápidas)")
+    print("1- 10%")
     print("2- 20%")
-    print("3- 40%")
-    print("4- 60%")
-    print("5- 80%")
-    print("6- 100% (Definitivo)")
+    print("3- 30%")
+    print("4- 40%")
+    print("5- 60%")
+    print("6- 80%")
+    print("7- 100% (Definitivo)")
     opcion = input("Seleccione una opción: ")
     filename = archivos.get(opcion, archivos["1"])
 
