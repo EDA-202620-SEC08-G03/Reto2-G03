@@ -26,6 +26,7 @@ def new_logic():
         'canales': msc.new_map(10, 0.5),
         "pedidos_por_fecha": msc.new_map(10, 0.5),
         'pedidos_por_pais': msc.new_map(10, 0.5),
+        'pedidos_por_pais_lp': mlp.new_map(10, 0.5),
         "productos":msc.new_map(10,0.5),
         'fecha_min': None,
         'fecha_max': None,
@@ -75,7 +76,6 @@ def load_data(catalog, filename):
     """
     Carga los datos del reto
     """
-    # TODO: Realizar la carga de datos
     ruta = os.path.join("Data", filename)
     
     with open(ruta, encoding="utf-8-sig") as archivo:
@@ -98,6 +98,7 @@ def load_data(catalog, filename):
                 if lista_pais is None:
                     lista_pais = lt.new_list()
                     msc.put(catalog["pedidos_por_pais"], pais, lista_pais)
+                    mlp.put(catalog["pedidos_por_pais_lp"], pais, lista_pais)
                 lt.add_last(lista_pais, pedido)
                 
                 fecha = pedido["Order_Date"]
@@ -248,9 +249,9 @@ def req_2(catalog, pais, min_cajas, max_cajas):
     """
     tiempoinicial = get_time()
     
-    lista_pais = msc.get(catalog["pedidos_por_pais"], pais)
+    lista_pais = mlp.get(catalog["pedidos_por_pais_lp"], pais)
     filtrados = lt.new_list()
-    conteo_productos = msc.new_map(10, 0.5)
+    conteo_productos = mlp.new_map(10, 0.5)
     suma_marketing = 0
     suma_amount = 0
     
@@ -262,11 +263,11 @@ def req_2(catalog, pais, min_cajas, max_cajas):
                 lt.add_last(filtrados, producto)
                 suma_marketing += producto["Marketing_Spend"]
                 suma_amount += producto["Amount"]
-                c = msc.get(conteo_productos, producto["Product"])
+                c = mlp.get(conteo_productos, producto["Product"])
                 if c is None:
-                    msc.put(conteo_productos, producto["Product"], 1)
+                    mlp.put(conteo_productos, producto["Product"], 1)
                 else:
-                    msc.put(conteo_productos, producto["Product"], c + 1)
+                    mlp.put(conteo_productos, producto["Product"], c + 1)
                 
     totalfiltrados = lt.size(filtrados)
     resultado = {
@@ -279,14 +280,14 @@ def req_2(catalog, pais, min_cajas, max_cajas):
         "lista": lt.new_list()
     }
     if totalfiltrados > 0:
-        claves = msc.key_set(conteo_productos)
+        claves = mlp.key_set(conteo_productos)
         resultado["n_productos"] = lt.size(claves)
         
         mejor = None
         mejor_cuenta = 0
         for i in range(lt.size(claves)):
             producto2 = lt.get_element(claves, i)
-            cuenta = msc.get(conteo_productos, producto2)
+            cuenta = mlp.get(conteo_productos, producto2)
             if cuenta > mejor_cuenta or (cuenta == mejor_cuenta and producto2 < mejor):
                 mejor = producto2
                 mejor_cuenta = cuenta
@@ -309,6 +310,7 @@ def req_2(catalog, pais, min_cajas, max_cajas):
             
     tiempofinal = get_time()
     resultado["tiempo"] = delta_time(tiempoinicial, tiempofinal)
+    
     return resultado
 
 def cmp_req3(p1, p2):
@@ -562,8 +564,6 @@ def req_6(catalog, producto, fecha_inicial, fecha_final, n):
                 info["Eficiencia"] = info["Amount_total"] / info["Marketing_total"]
                 al.add_last(paises_lista, info)
             nodo = nodo["next"]
-
-    
 
     paises_ordenados = al.merge_sort(paises_lista, cmp_req_6)
     n_total = al.size(paises_ordenados)
