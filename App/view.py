@@ -8,9 +8,12 @@ archivos = {
     "2": "chocolate_sale_20_ptc.csv",
     "3": "chocolate_sale_30_ptc.csv",
     "4": "chocolate_sale_40_ptc.csv",
-    "5": "chocolate_sale_60_ptc.csv",
-    "6": "chocolate_sale_80_ptc.csv",
-    "7": "chocolate_sale_100_ptc.csv",
+    "5": "chocolate_sale_50_ptc.csv",
+    "6": "chocolate_sale_60_ptc.csv",
+    "7": "chocolate_sale_70_ptc.csv",
+    "8": "chocolate_sale_80_ptc.csv",
+    "9": "chocolate_sale_90_ptc.csv",
+    "10": "chocolate_sale_100_ptc.csv",
 }
 
 def new_logic():
@@ -41,9 +44,12 @@ def load_data(control):
     print("2- 20%")
     print("3- 30%")
     print("4- 40%")
-    print("5- 60%")
-    print("6- 80%")
-    print("7- 100% (Definitivo)")
+    print("5- 50%")
+    print("6- 60%")
+    print("7- 70%")
+    print("8- 80%")
+    print("9- 90%")
+    print("10- 100% (Definitivo)")
     opcion = input("Seleccione una opción: ")
     filename = archivos.get(opcion, archivos["1"])
 
