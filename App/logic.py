@@ -433,8 +433,13 @@ def req_4(catalog, producto, pais):
     
     tiempo_final = get_time()
     resultado["tiempo"] = delta_time(tiempo_inicial, tiempo_final)
-    
-    return resultado
+    print(f"Tiempo de ejecución: {resultado['tiempo']} ms",
+          f"Número total de pedidos filtrados: {resultado['total']}",
+          f"Promedio Price per Box: {resultado['promedio_price_per_box']}",
+          f"Promedio Discount Pct: {resultado['promedio_discount_pct']}",
+          f"Promedio Marketing Spend: {resultado['promedio_marketing_spend']}",
+          f"Promedio Boxes Shipped: {resultado['promedio_boxes_shipped']}",
+          f"Dos primeros pedidos: {resultado['dos_primeros']}", sep="\n")
     
 
 def comparacion_req5 (e1, e2):
