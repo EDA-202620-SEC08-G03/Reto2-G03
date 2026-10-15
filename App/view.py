@@ -157,7 +157,7 @@ def print_req_5(control):
     
     n = int(input("Número de productos a consultar: "))
     pais = input("Ingrese un país: ")
-    fecha_inicio = input("Ingrese la fecha del periodo: ")
+    fecha_inicio = input("Ingrese la fecha inicial del periodo: ")
     fecha_final = input("Ingrese la fecha final del periodo: ")
     print(logic.req_5(control, n, pais, fecha_inicio, fecha_final))
 

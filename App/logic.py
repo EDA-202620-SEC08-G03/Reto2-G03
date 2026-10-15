@@ -501,13 +501,15 @@ def req_5(catalog, n, pais, fecha_inicio, fecha_fin):
         al.add_last(top, al.get_element(ordenados, i))
         
     tiempofinal = get_time()
-    return {
-        "tiempo": delta_time(tiempoinicio, tiempofinal),
-        "total_pedidos": total_pedidos,
-        "n_productos": n_productos,
-        "recaudo_total": recaudo_total,
-        "top": top
-    }
+    print(f"tiempo: {delta_time(tiempoinicio, tiempofinal)}")
+    print(f"Número total de pedidos: {total_pedidos}")
+    print(f"N_productos: {n_productos}")
+    print(f"Recaudo total: {recaudo_total}")
+    
+    print(f"Top {n} países con mayor eficiencia de mercadeo:")
+    for p in top["elements"]:
+        print(p)
+
     
 def cmp_req_6(p1, p2):
         if p1["Eficiencia"] > p2["Eficiencia"]:
