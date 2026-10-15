@@ -403,7 +403,8 @@ def req_4(catalog, producto, pais):
         "promedio_price_per_box" : 0,
         "promedio_discount_pct" : 0,
         "promedio_marketing_spend" : 0,
-        "promedio_boxes_shipped" : 0
+        "promedio_boxes_shipped" : 0,
+        "dos_primeros" : []
     }
     
     total_price = 0
